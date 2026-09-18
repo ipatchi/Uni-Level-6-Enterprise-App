@@ -43,7 +43,7 @@ class LeaveRequestControllerTests {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ContextFacade facade;
+    private LeaveContextFacade facade;
 
     private LeaveRequestDTO mockLeaveRequestDTO;
 

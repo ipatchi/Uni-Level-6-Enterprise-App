@@ -7,7 +7,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import staffs.leaverequestapp.leave.ContextFacade;
 import staffs.leaverequestapp.leave.application.dto.LeaveAllowanceDTO;
 import staffs.leaverequestapp.leave.ui.LeaveAllowanceController;
 
@@ -34,7 +33,7 @@ class LeaveAllowanceControllerTests {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ContextFacade facade;
+    private LeaveContextFacade facade;
 
     @Test
     @DisplayName("You can get the leave balance for a staff member")

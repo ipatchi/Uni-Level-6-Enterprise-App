@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {ContextFacade.class})
+@ContextConfiguration(classes = {LeaveContextFacade.class})
 @DisplayName("Context Facade Security and Unit Tests")
 @EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
 class ContextFacadeTests {
@@ -40,7 +40,7 @@ class ContextFacadeTests {
     private final int VALID_YEAR = 2026;
 
     @Autowired
-    private ContextFacade facade;
+    private LeaveContextFacade facade;
 
     @MockitoBean
     private LeaveAllowanceQueryHandler leaveAllowanceQueryHandler;

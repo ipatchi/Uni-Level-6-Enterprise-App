@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class ContextFacade {
+public class LeaveContextFacade {
     private final LeaveRequestQueryHandler leaveRequestQueryHandler;
     private final LeaveAllowanceQueryHandler leaveAllowanceQueryHandler;
     private final LeaveRequestApplicationService leaveRequestApplicationService;

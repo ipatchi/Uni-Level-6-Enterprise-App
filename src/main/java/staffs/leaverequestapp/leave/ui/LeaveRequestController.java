@@ -3,7 +3,7 @@ package staffs.leaverequestapp.leave.ui;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import staffs.leaverequestapp.leave.ContextFacade;
+import staffs.leaverequestapp.leave.LeaveContextFacade;
 import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
 
 import java.util.UUID;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 public class LeaveRequestController {
-    private final ContextFacade facade;
+    private final LeaveContextFacade facade;
 
     @GetMapping("/{staff_id}")
     @ResponseStatus(HttpStatus.OK)
