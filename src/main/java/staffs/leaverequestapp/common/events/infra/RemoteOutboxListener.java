@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.common.events;
+package staffs.leaverequestapp.common.events.infra;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import staffs.leaverequestapp.common.events.RemoteEvent;
 
 @Component
 @Slf4j

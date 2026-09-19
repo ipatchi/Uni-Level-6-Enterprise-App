@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.common.events;
+package staffs.leaverequestapp.common.events.infra;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 @Entity(name="event_store")
 @Table(name="event_store")

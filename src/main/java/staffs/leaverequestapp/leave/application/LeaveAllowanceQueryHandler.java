@@ -23,10 +23,19 @@ public class LeaveAllowanceQueryHandler {
                 .orElseThrow(() -> new IllegalArgumentException("Allowance could not be found"));
     }
 
+    public LeaveAllowanceDTO findLeaveAllowanceByIdentityId(String identityId){
+        return leaveAllowanceRepository
+                .findByIdentityId(identityId)
+                .map(LeaveAllowanceJpaToDTOMapper::toLeaveAllowanceDTO)
+                .orElseThrow(() -> new IllegalArgumentException("Allowance could not be found"));
+    }
+
     public List<LeaveAllowanceDTO> findLeaveAllowanceByManagerId(UUID managerId){
         List<LeaveAllowanceJpa> jpaList = leaveAllowanceRepository.findByManagerId(managerId);
         return jpaList.stream()
                 .map(LeaveAllowanceJpaToDTOMapper::toLeaveAllowanceDTO)
                 .collect(Collectors.toList());
     }
+
+
 }

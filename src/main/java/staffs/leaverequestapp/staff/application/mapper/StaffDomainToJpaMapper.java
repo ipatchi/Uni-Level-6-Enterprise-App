@@ -13,10 +13,11 @@ public class StaffDomainToJpaMapper {
 
     public static StaffJpa toJpa(StaffMember staffMember) {
         StaffJpa staffJpa = new StaffJpa();
-        staffJpa.setStaffId(staffMember.getStaffId().toString());
+        staffJpa.setStaffId(staffMember.getStaffId());
         staffJpa.setIdentity(staffMember.getIdentity());
         staffJpa.setEmail(staffMember.getEmail());
         staffJpa.setEmploymentStatus(staffMember.getEmploymentStatus());
+        staffJpa.setIdentityId(staffMember.getIdentityId());
 
         OrganisationJpa orgJpa = new OrganisationJpa();
         orgJpa.setHireDate(staffMember.getOrganisation().hireDate());

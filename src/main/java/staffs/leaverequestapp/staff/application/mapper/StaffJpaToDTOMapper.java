@@ -25,13 +25,14 @@ public class StaffJpaToDTOMapper {
         );
 
         return new StaffDTO(
-                UUID.fromString(staffJpa.getStaffId()),
+                staffJpa.getStaffId(),
                 staffJpa.getIdentity().firstName(),
                 staffJpa.getIdentity().surname(),
                 staffJpa.getEmail(),
                 orgDTO,
                 placementDTO,
-                staffJpa.getEmploymentStatus()
+                staffJpa.getEmploymentStatus(),
+                staffJpa.getIdentityId()
         );
     }
 }

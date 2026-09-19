@@ -10,5 +10,6 @@ import java.util.UUID;
 
 @Repository
 public interface StaffRepository extends CrudRepository<StaffJpa, String> {
-    Optional<StaffMember> findByStaffId(UUID staffId);
+    Optional<StaffJpa> findByStaffId(UUID staffId);
+    Optional<StaffJpa> findByIdentityId(String identityId);
 }

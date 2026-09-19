@@ -1,10 +1,8 @@
 package staffs.leaverequestapp.leave.ui;
 
 import java.time.LocalDate;
-import java.util.UUID;
-
 public record SubmitLeaveRequestCommand(
-        UUID staffId,
+        String identityId,
         LocalDate startDate,
         LocalDate endDate,
         String reason)

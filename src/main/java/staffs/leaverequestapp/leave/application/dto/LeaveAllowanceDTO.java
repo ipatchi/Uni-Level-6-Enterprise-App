@@ -14,7 +14,8 @@ public record LeaveAllowanceDTO(
         UUID managerId,
         int year,
         double totalAllowance,
-        double usedAllowance
+        double usedAllowance,
+        String identityId
 ) {
     public LeaveAllowanceDTO {
         Objects.requireNonNull(id, "ID cannot be null");

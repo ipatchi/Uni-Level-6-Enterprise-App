@@ -20,6 +20,7 @@ public class LeaveAllowanceDomainToJpaMapper {
         leaveAllowanceJpa.setYear(allowance.getYear());
         leaveAllowanceJpa.setTotalAllowance(allowance.getTotalAllowance());
         leaveAllowanceJpa.setUsedAllowance(allowance.getUsedAllowance());
+        leaveAllowanceJpa.setIdentityId(allowance.getIdentityId());
 
         return leaveAllowanceJpa;
     }

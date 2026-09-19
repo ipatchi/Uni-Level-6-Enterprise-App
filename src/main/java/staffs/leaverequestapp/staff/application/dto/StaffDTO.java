@@ -13,7 +13,8 @@ public record StaffDTO(
         String email,
         OrganisationDTO organisation,
         PlacementDTO placement,
-        EmploymentStatus status
+        EmploymentStatus status,
+        String identityId
 ) {
     public StaffDTO {
         Objects.requireNonNull(id, "ID cannot be null");

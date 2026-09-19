@@ -16,5 +16,6 @@ public record CreateStaffMemberCommand(
         LocalDate roleStartDate,
         String jobLevel,
         EmploymentType employmentType,
-        EmploymentStatus status
+        EmploymentStatus status,
+        String identityId
 ) {}

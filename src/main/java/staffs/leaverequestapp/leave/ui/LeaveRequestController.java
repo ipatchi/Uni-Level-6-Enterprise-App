@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import staffs.leaverequestapp.leave.LeaveContextFacade;
 import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -18,23 +19,69 @@ import java.util.UUID;
 public class LeaveRequestController {
     private final LeaveContextFacade facade;
 
-    //Leave Requests for a specific staff ID
-    @GetMapping("/{staff_id}")
+    //View own leave requests
+    @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public Iterable<LeaveRequestDTO> getLeaveRequestsByStaffId(@PathVariable UUID staff_id) {
-        return facade.findLeaveRequestsByStaffId(staff_id);
+    public Iterable<LeaveRequestDTO> getLeaveRequestsByStaffId(Principal principle) {
+        return facade.findMyLeaveRequests(principle.getName());
     }
 
-    //Leave requests for the manager making request, filtered by dates
+    //View my team (as manager) with filters
     @GetMapping("/team")
     public ResponseEntity<List<LeaveRequestDTO>> getTeamLeaveRequests(
-            @RequestHeader("X-User-Id") UUID managerId,
+            Principal principal,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<LeaveRequestDTO> requests = facade.findTeamLeaveOutstandingRequests(managerId, startDate, endDate);
+        List<LeaveRequestDTO> requests = facade.findTeamLeaveOutstandingRequests(principal.getName(), startDate, endDate);
         return ResponseEntity.ok(requests);
     }
+
+    //Create new leave request
+    @PostMapping("")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public String createLeaveRequest(@RequestBody SubmitLeaveRequestCommand command, Principal principal) {
+        SubmitLeaveRequestCommand authenticatedCommand = new SubmitLeaveRequestCommand(
+                principal.getName(),
+                command.startDate(),
+                command.endDate(),
+                command.reason()
+        );
+        return facade.makeLeaveRequest(authenticatedCommand);
+
+    }
+
+    //Approve a specific leave request (as manager)
+    @PatchMapping("{leaveRequestId}/approve")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public String approveLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
+        return facade.approveLeaveRequest(
+                new ApproveLeaveRequestCommand(principal.getName(), leaveRequestId)
+        );
+    }
+
+    //Reject a specific leave request (as manager)
+    @PatchMapping("{leaveRequestId}/reject")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public String rejectLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
+        return facade.rejectLeaveRequest(
+                new RejectLeaveRequestCommand(principal.getName(), leaveRequestId)
+        );
+    }
+
+    //Cancel a specific leave request (as self)
+    @PatchMapping("/{leaveRequestId}/cancel")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public String cancelLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
+        return facade.cancelLeaveRequest(
+                new CancelLeaveRequestCommand(principal.getName(), leaveRequestId)
+        );
+    }
+
 
     //Get admin view of leave requests with filters
     @GetMapping("/")
@@ -47,44 +94,6 @@ public class LeaveRequestController {
     ) {
         return facade.findFilteredOutstandingLeaveRequests(staffId, managerId, startDate, endDate);
     }
-
-    //Create new leave request
-    @PostMapping("")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
-    public String createLeaveRequest(@RequestBody SubmitLeaveRequestCommand command) {
-        return facade.makeLeaveRequest(command);
-
-    }
-
-    //Approve a specific leave request (as manager)
-    @PatchMapping("{leaveRequestId}/approve")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public String approveLeaveRequest(@PathVariable String leaveRequestId, @RequestHeader("X-User-Id") UUID managerId) {
-        ApproveLeaveRequestCommand command = new ApproveLeaveRequestCommand(managerId, leaveRequestId);
-        return facade.approveLeaveRequest(command);
-    }
-
-    //Reject a specific leave request (as manager)
-    @PatchMapping("{leaveRequestId}/reject")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public String rejectLeaveRequest(@PathVariable String leaveRequestId, @RequestHeader("X-User-Id") UUID managerId) {
-        RejectLeaveRequestCommand command = new RejectLeaveRequestCommand(managerId, leaveRequestId);
-        return facade.rejectLeaveRequest(command);
-    }
-
-    //Cancel a specific leave request (as self)
-    @PatchMapping("/{leaveRequestId}/cancel")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public String cancelLeaveRequest(@PathVariable String leaveRequestId, @RequestHeader("X-User-Id") UUID staffId) {
-        CancelLeaveRequestCommand command = new CancelLeaveRequestCommand(staffId, leaveRequestId);
-        return facade.cancelLeaveRequest(command);
-    }
-
-
 
 
 }

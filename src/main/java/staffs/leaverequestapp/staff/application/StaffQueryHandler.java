@@ -16,8 +16,15 @@ public class StaffQueryHandler
     private final StaffRepository staffRepository;
 
     public StaffDTO getStaffById(UUID staffId) {
-        StaffJpa staffJpa = staffRepository.findById(staffId.toString())
+        StaffJpa staffJpa = staffRepository.findByStaffId(staffId)
                 .orElseThrow(() -> new IllegalArgumentException("Staff member not found with ID: " + staffId));;
         return StaffJpaToDTOMapper.toStaffDTO(staffJpa);
     }
+
+    public StaffDTO getStaffByIdentityId(String identityId) {
+        StaffJpa staffJpa = staffRepository.findByIdentityId(identityId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff member not found with identityId: " + identityId));;
+        return StaffJpaToDTOMapper.toStaffDTO(staffJpa);
+    }
+
 }

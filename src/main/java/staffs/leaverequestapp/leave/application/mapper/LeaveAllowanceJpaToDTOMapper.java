@@ -23,7 +23,8 @@ public class LeaveAllowanceJpaToDTOMapper {
                 leaveAllowance.getManagerId(),
                 leaveAllowance.getYear(),
                 leaveAllowance.getTotalAllowance(),
-                leaveAllowance.getUsedAllowance()
+                leaveAllowance.getUsedAllowance(),
+                leaveAllowance.getIdentityId()
         );
     }
 }

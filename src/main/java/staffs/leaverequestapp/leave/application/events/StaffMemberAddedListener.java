@@ -33,7 +33,8 @@ public class StaffMemberAddedListener {
                 event.managerId(),
                 eventYear,
                 25,
-                event.fullName()
+                event.fullName(),
+                event.identityId()
         );
         leaveAllowanceApplicationService.addLeaveAllowance(command);
     }

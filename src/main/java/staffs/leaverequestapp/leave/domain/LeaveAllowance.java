@@ -15,6 +15,7 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
     private int year;
     private double totalAllowance;
     private double usedAllowance;
+    private String identityId;
 
     public LeaveAllowance(
             Identity<LeaveAllowance> id,
@@ -22,7 +23,8 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
             UUID managerId,
             int year,
             double totalAllowance,
-            FullName fullName
+            FullName fullName,
+            String identityId
     ) {
         super(id);
 
@@ -36,6 +38,7 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
         this.totalAllowance = totalAllowance;
         this.usedAllowance = 0.0;
         this.fullName = fullName;
+        this.identityId = identityId;
     }
 
     public UUID getStaffId() {return staffId;}
@@ -44,6 +47,7 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
     public double getUsedAllowance() {return usedAllowance;}
     public FullName getFullName() {return fullName;}
     public UUID getManagerId() {return managerId;}
+    public String getIdentityId() {return identityId;}
 
     public static LeaveAllowance leaveAllowanceOf(
             Identity<LeaveAllowance> id,
@@ -52,9 +56,10 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
             UUID managerId,
             int year,
             double totalAllowance,
-            double usedAllowance
+            double usedAllowance,
+            String identityId
     ) {
-        LeaveAllowance leaveAllowance = new LeaveAllowance(id, staffId, managerId, year, totalAllowance, fullName);
+        LeaveAllowance leaveAllowance = new LeaveAllowance(id, staffId, managerId, year, totalAllowance, fullName, identityId);
         leaveAllowance.usedAllowance = usedAllowance;
         return leaveAllowance;
     }

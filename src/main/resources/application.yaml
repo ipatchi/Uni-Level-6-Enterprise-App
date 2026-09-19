@@ -31,4 +31,9 @@ rabbitmq:
       "[staffs.leaverequestapp.common.events.StaffMemberAmendedEvent]":
         exchange: "staff.exchange"
         routing-key: "staff.amended"
+      "[staffs.leaverequestapp.common.events.UserRegisteredEvent]":
+        exchange: "identity.exchange"
+        routing-key: "identity.registered"
 
+firebase:
+  web-api-key: ${FIREBASE_API_KEY}

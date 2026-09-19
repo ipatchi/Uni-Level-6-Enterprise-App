@@ -7,6 +7,8 @@ import lombok.ToString;
 import staffs.leaverequestapp.common.domain.FullName;
 import staffs.leaverequestapp.staff.domain.EmploymentStatus;
 
+import java.util.UUID;
+
 @Entity(name = "staff")
 @Table(name ="staff_members")
 @Getter
@@ -15,7 +17,7 @@ import staffs.leaverequestapp.staff.domain.EmploymentStatus;
 public class StaffJpa {
     @Id
     @Column(name="staffId")
-    private String staffId;
+    private UUID staffId;
 
     @Embedded
     private FullName identity;
@@ -32,4 +34,7 @@ public class StaffJpa {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EmploymentStatus employmentStatus;
+
+    @Column(name="identityId")
+    private String identityId;
 }

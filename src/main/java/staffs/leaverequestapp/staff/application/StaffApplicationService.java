@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import staffs.leaverequestapp.common.domain.FullName;
 import staffs.leaverequestapp.common.domain.Identity;
-import staffs.leaverequestapp.common.events.DomainEventManager;
+import staffs.leaverequestapp.common.events.infra.DomainEventManager;
 import staffs.leaverequestapp.common.events.StaffMemberAmendedEvent;
 import staffs.leaverequestapp.staff.application.mapper.StaffDomainToJpaMapper;
 import staffs.leaverequestapp.staff.application.mapper.StaffMemberJpaToDomainMapper;
@@ -36,7 +36,8 @@ public class StaffApplicationService {
                 command.email(),
                 new Organisation(command.hireDate(), command.department(), command.managerId()),
                 new Placement(command.currentRole(), command.roleStartDate(), command.jobLevel(), command.employmentType()),
-                command.managerId()
+                command.managerId(),
+                command.identityId()
         );
 
         StaffJpa staffJpa = StaffDomainToJpaMapper.toJpa(staffMember);

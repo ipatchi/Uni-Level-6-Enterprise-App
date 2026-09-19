@@ -37,16 +37,16 @@ public class LeaveRequestApplicationService {
 
     @Transactional
     public String submitLeaveRequest(SubmitLeaveRequestCommand command) {
-        int year = command.startDate().getYear();
+        UUID staffId = findStaffId(command.identityId());
 
         LeaveAllowanceJpa allowanceJpa = leaveAllowanceRepository
-                .findByStaffId(command.staffId())
-                .orElseThrow(() -> new IllegalArgumentException("No leave allowance found for staff member " + command.staffId()));
+                .findByStaffId(staffId)
+                .orElseThrow(() -> new IllegalArgumentException("No leave allowance found for identity " + command.identityId()));
 
         LeaveAllowance leaveAllowance = LeaveAllowanceJpaToDomainMapper.map(allowanceJpa);
 
         Identity<LeaveRequest> newLeaveRequestId = Identity.generateId();
-        LeaveRequest leaveRequest = new LeaveRequest(newLeaveRequestId, command.staffId(), command.startDate(), command.endDate(), command.reason());
+        LeaveRequest leaveRequest = new LeaveRequest(newLeaveRequestId, staffId, command.startDate(), command.endDate(), command.reason());
 
         leaveAllowance.deductLeave(leaveRequest.getTotalDays());
         leaveAllowanceRepository.save(LeaveAllowanceDomainToJpaMapper.map(leaveAllowance));
@@ -63,6 +63,7 @@ public class LeaveRequestApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Leave request not found with id" + command.leaveRequestId()));
 
         LeaveRequest leaveRequest = LeaveRequestJpaToDomainMapper.map(leaveRequestJpa);
+        assertManager(command.identityId(), leaveRequest.getStaffId());
 
         leaveRequest.approveRequest();
 
@@ -79,6 +80,7 @@ public class LeaveRequestApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Leave request not found with id" + command.leaveRequestId()));
 
         LeaveRequest leaveRequest = LeaveRequestJpaToDomainMapper.map(leaveRequestJpa);
+        assertManager(command.identityId(), leaveRequest.getStaffId());
 
         leaveRequest.rejectRequest();
 
@@ -110,12 +112,12 @@ public class LeaveRequestApplicationService {
             throw new LeaveRequestHasBeenCancelledException("Request already cancelled");
         }
 
-        UUID staffId = leaveRequest.getStaffId();
-        if (!staffId.equals(command.staffId())) {
+        UUID staffId = findStaffId(command.identityId());
+        if (!staffId.equals(leaveRequest.getStaffId())) {
             throw new LeaveRequestCannotBeCancelledByProxyException("You can only cancel your own leave requests");
         }
 
-        leaveRequest.cancelRequest(command.staffId());
+        leaveRequest.cancelRequest(staffId);
         leaveRequestRepository.save(LeaveRequestDomainToJpaMapper.map(leaveRequest));
 
         //When a request is created it already deducts the amount, when it is rejected the amount is refunded
@@ -131,5 +133,22 @@ public class LeaveRequestApplicationService {
         }
 
         return leaveRequest.id().id();
+    }
+
+    private UUID findStaffId(String identityId) {
+        return leaveAllowanceRepository.findByIdentityId(identityId)
+                .map(LeaveAllowanceJpa::getStaffId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No staff member found for identity " + identityId));
+    }
+
+    private void assertManager(String identityId, UUID staffId) {
+        UUID managerId = findStaffId(identityId);
+        LeaveAllowanceJpa allowance = leaveAllowanceRepository.findByStaffId(staffId)
+                .orElseThrow(() -> new IllegalArgumentException("No leave allowance found for staff member " + staffId));
+
+        if (!managerId.equals(allowance.getManagerId())) {
+            throw new IllegalArgumentException("The authenticated user is not the staff member's manager");
+        }
     }
 }

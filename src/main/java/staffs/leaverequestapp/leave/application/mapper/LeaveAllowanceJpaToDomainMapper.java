@@ -27,7 +27,8 @@ public class LeaveAllowanceJpaToDomainMapper {
                 leaveAllowanceJpa.getManagerId(),
                 leaveAllowanceJpa.getYear(),
                 leaveAllowanceJpa.getTotalAllowance(),
-                leaveAllowanceJpa.getUsedAllowance()
+                leaveAllowanceJpa.getUsedAllowance(),
+                leaveAllowanceJpa.getIdentityId()
         );
     }
 }

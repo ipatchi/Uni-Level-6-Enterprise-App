@@ -14,7 +14,7 @@ public class StaffMemberJpaToDomainMapper {
             return null;
         }
 
-        Identity<StaffMember> staffId = new Identity<>(staffJpa.getStaffId());
+        Identity<StaffMember> staffId = new Identity<>(staffJpa.getStaffId().toString());
 
 
         return StaffMember.restore(
@@ -33,7 +33,8 @@ public class StaffMemberJpaToDomainMapper {
                         staffJpa.getPlacement().getEmploymentType()
                 ),
                 staffJpa.getOrganisation().getLineManagerId(),
-                staffJpa.getEmploymentStatus()
+                staffJpa.getEmploymentStatus(),
+                staffJpa.getIdentityId()
         );
     }
 }

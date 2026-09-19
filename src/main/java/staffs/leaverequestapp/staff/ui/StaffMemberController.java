@@ -31,4 +31,10 @@ public class StaffMemberController {
     public StaffDTO getStaffMemberById(@PathVariable UUID staffId) {
         return facade.getStaffById(staffId);
     }
+
+    @GetMapping("/identity/{identityId}")
+    @ResponseStatus(HttpStatus.OK)
+    public StaffDTO getStaffMemberByIdentityId(@PathVariable String identityId) {
+        return facade.getStaffByIdentityId(identityId);
+    }
 }

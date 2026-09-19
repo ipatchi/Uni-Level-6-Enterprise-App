@@ -46,6 +46,9 @@ public class LeaveAllowanceJpa {
     @Column(name = "used_allowance")
     private double usedAllowance;
 
+    @Column(name = "identityId")
+    private String identityId;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

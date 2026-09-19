@@ -10,11 +10,12 @@ public record StaffMemberHiredEvent(
         Instant occurredOn,
         UUID staffId,
         UUID managerId,
-        FullName fullName
+        FullName fullName,
+        String identityId
 ) implements RemoteEvent {
 
-    public StaffMemberHiredEvent(UUID staffId, UUID managerId, FullName fullName) {
-        this(null, Instant.now(), staffId, managerId, fullName);
+    public StaffMemberHiredEvent(UUID staffId, UUID managerId, FullName fullName, String identityId) {
+        this(null, Instant.now(), staffId, managerId, fullName, identityId);
     }
 
     @Override
@@ -24,7 +25,7 @@ public record StaffMemberHiredEvent(
 
     @Override
     public StaffMemberHiredEvent withId(Long newId) {
-        return new StaffMemberHiredEvent(newId, this.occurredOn, this.staffId, this.managerId, this.fullName);
+        return new StaffMemberHiredEvent(newId, this.occurredOn, this.staffId, this.managerId, this.fullName, this.identityId);
     }
 
     @Override

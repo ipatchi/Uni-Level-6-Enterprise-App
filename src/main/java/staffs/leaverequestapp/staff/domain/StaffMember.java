@@ -20,6 +20,7 @@ public class StaffMember extends AggregateRoot<StaffMember> {
     private Placement placement;
     private UUID managerId;
     private EmploymentStatus employmentStatus;
+    private String identityId;
 
     private StaffMember(
             Identity<StaffMember> id,
@@ -28,7 +29,8 @@ public class StaffMember extends AggregateRoot<StaffMember> {
             Organisation organisation,
             Placement placement,
             UUID managerId,
-            EmploymentStatus employmentStatus
+            EmploymentStatus employmentStatus,
+            String identityId
     ) {
         super(id);
         this.identity = identity;
@@ -37,6 +39,7 @@ public class StaffMember extends AggregateRoot<StaffMember> {
         this.placement = placement;
         this.managerId = managerId;
         this.employmentStatus = employmentStatus;
+        this.identityId = identityId;
     }
 
     public static StaffMember hire(
@@ -45,18 +48,20 @@ public class StaffMember extends AggregateRoot<StaffMember> {
             String email,
             Organisation organisation,
             Placement placement,
-            UUID managerId
+            UUID managerId,
+            String identityId
     ) {
         if (email == null || !email.contains("@")) {
             throw new IllegalArgumentException("A valid email address is required");
         }
 
-        StaffMember staff = new StaffMember(id, identity, email, organisation, placement, managerId, EmploymentStatus.ACTIVE);
+        StaffMember staff = new StaffMember(id, identity, email, organisation, placement, managerId, EmploymentStatus.ACTIVE, identityId);
 
         staff.addDomainEvent(new StaffMemberHiredEvent(
                 UUID.fromString(id.id()),
                 managerId,
-                identity
+                identity,
+                identityId
         ));
 
         return staff;
@@ -69,9 +74,10 @@ public class StaffMember extends AggregateRoot<StaffMember> {
             Organisation organisation,
             Placement placement,
             UUID managerId,
-            EmploymentStatus employmentStatus
+            EmploymentStatus employmentStatus,
+            String identityId
     ) {
-        return new StaffMember(id, identity, email, organisation, placement, managerId, employmentStatus);
+        return new StaffMember(id, identity, email, organisation, placement, managerId, employmentStatus, identityId);
     }
 
     public void updateDetails(

@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.common.events;
+package staffs.leaverequestapp.common.events.infra;
 
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;

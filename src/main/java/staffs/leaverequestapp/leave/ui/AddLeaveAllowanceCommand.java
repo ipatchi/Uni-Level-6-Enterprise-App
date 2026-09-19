@@ -10,7 +10,8 @@ public record AddLeaveAllowanceCommand(
         UUID managerId,
         int year,
         double totalAllowance,
-        FullName fullName)
+        FullName fullName,
+        String identityId)
 {
 //validation
 }

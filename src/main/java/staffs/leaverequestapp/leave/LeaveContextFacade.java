@@ -9,9 +9,8 @@ import staffs.leaverequestapp.leave.application.LeaveRequestApplicationService;
 import staffs.leaverequestapp.leave.application.LeaveRequestQueryHandler;
 import staffs.leaverequestapp.leave.application.dto.LeaveAllowanceDTO;
 import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
-import staffs.leaverequestapp.leave.persistance.entities.LeaveAllowanceJpa;
+import staffs.leaverequestapp.leave.application.mapper.LeaveAllowanceJpaToDTOMapper;
 import staffs.leaverequestapp.leave.ui.*;
-//import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,54 +24,17 @@ public class LeaveContextFacade {
     private final LeaveRequestApplicationService leaveRequestApplicationService;
     private final LeaveAllowanceApplicationService leaveAllowanceApplicationService;
 
+    //Find own leave requests
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public List<LeaveRequestDTO> findLeaveRequestsByStaffId(UUID staffId) {
+    public List<LeaveRequestDTO> findMyLeaveRequests(String identityId) {
+        UUID staffId = leaveAllowanceQueryHandler.findLeaveAllowanceByIdentityId(identityId).staffId();
         return leaveRequestQueryHandler.findLeaveRequestsByStaffId(staffId);
     }
 
-   @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public List<LeaveRequestDTO> findLeaveRequestsByManagerId(UUID managerId) {
-        List<LeaveAllowanceDTO> teamAllowances = leaveAllowanceQueryHandler.findLeaveAllowanceByManagerId(managerId);
-
-        List<UUID> staffIds = teamAllowances.stream()
-                .map(LeaveAllowanceDTO::staffId)
-                .toList();
-
-        return leaveRequestQueryHandler.findLeaveRequestsByStaffIds(staffIds);
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public String makeLeaveRequest(SubmitLeaveRequestCommand submitLeaveRequestCommand){
-        return leaveRequestApplicationService.submitLeaveRequest(submitLeaveRequestCommand);
-    }
-
+    //Find teams leave requests (outstanding) and filter by dates
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public String approveLeaveRequest(ApproveLeaveRequestCommand approveLeaveRequestCommand){
-        return leaveRequestApplicationService.approveLeaveRequest(approveLeaveRequestCommand);
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public String rejectLeaveRequest(RejectLeaveRequestCommand rejectLeaveRequestCommand){
-        return leaveRequestApplicationService.rejectLeaveRequest(rejectLeaveRequestCommand);
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER', 'STAFF')")
-    public String cancelLeaveRequest(CancelLeaveRequestCommand cancelLeaveRequestCommand){
-        return leaveRequestApplicationService.cancelLeaveRequest(cancelLeaveRequestCommand);
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public LeaveAllowanceDTO findLeaveAllowanceByUserId(UUID staffId) {
-        return leaveAllowanceQueryHandler.findLeaveAllowanceByUserId(staffId);
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
-    public List<LeaveAllowanceDTO> findLeaveAllowanceByManagerId(UUID managerId) {
-        return leaveAllowanceQueryHandler.findLeaveAllowanceByManagerId(managerId);
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public List<LeaveRequestDTO> findTeamLeaveOutstandingRequests(UUID managerId, LocalDate startDate, LocalDate endDate) {
+    public List<LeaveRequestDTO> findTeamLeaveOutstandingRequests(String identityId, LocalDate startDate, LocalDate endDate) {
+        UUID managerId = leaveAllowanceQueryHandler.findLeaveAllowanceByIdentityId(identityId).staffId();
         List<LeaveAllowanceDTO> teamAllowances = leaveAllowanceQueryHandler.findLeaveAllowanceByManagerId(managerId);
 
         List<UUID> staffIds = teamAllowances.stream()
@@ -82,9 +44,54 @@ public class LeaveContextFacade {
         return leaveRequestQueryHandler.findOutstandingLeaveRequestsByStaffIdsAndDates(staffIds, startDate, endDate);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
+    public String makeLeaveRequest(SubmitLeaveRequestCommand command) {
+        return leaveRequestApplicationService.submitLeaveRequest(command);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public String approveLeaveRequest(ApproveLeaveRequestCommand command) {
+        return leaveRequestApplicationService.approveLeaveRequest(command);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public String rejectLeaveRequest(RejectLeaveRequestCommand command) {
+        return leaveRequestApplicationService.rejectLeaveRequest(command);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER', 'STAFF')")
+    public String cancelLeaveRequest(CancelLeaveRequestCommand command) {
+        return leaveRequestApplicationService.cancelLeaveRequest(command);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
+    public LeaveAllowanceDTO findLeaveAllowanceByUserId(UUID staffId) {
+        return leaveAllowanceQueryHandler.findLeaveAllowanceByUserId(staffId);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
+    public LeaveAllowanceDTO findMyLeaveAllowance(String identityId) {
+        return leaveAllowanceQueryHandler.findLeaveAllowanceByIdentityId(identityId);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
+    public List<LeaveAllowanceDTO> findLeaveAllowanceByManagerId(UUID managerId) {
+        return leaveAllowanceQueryHandler.findLeaveAllowanceByManagerId(managerId);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public List<LeaveAllowanceDTO> findMyTeamLeaveAllowances(String identityId) {
+        UUID managerId = leaveAllowanceQueryHandler
+                .findLeaveAllowanceByIdentityId(identityId)
+                .staffId();
+        return leaveAllowanceQueryHandler.findLeaveAllowanceByManagerId(managerId);
+    }
+
+
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public LeaveAllowanceJpa editLeaveAllowance(AmmendLeaveAllowanceCommand command) {
-        return leaveAllowanceApplicationService.ammendLeaveAllowance(command);
+    public LeaveAllowanceDTO editLeaveAllowance(AmmendLeaveAllowanceCommand command) {
+        return LeaveAllowanceJpaToDTOMapper.toLeaveAllowanceDTO(
+                leaveAllowanceApplicationService.ammendLeaveAllowance(command));
     }
 
     public List<LeaveRequestDTO> findFilteredOutstandingLeaveRequests(UUID staffId, UUID managerId, LocalDate startDate, LocalDate endDate) {

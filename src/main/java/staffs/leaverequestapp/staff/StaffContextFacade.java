@@ -32,4 +32,9 @@ public class StaffContextFacade {
     public void amendStaffMember(AmmendStaffMemberCommand command) {
         staffApplicationService.ammendStaffMember(command);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public StaffDTO getStaffByIdentityId(@PathVariable String identityId) {
+        return staffQueryHandler.getStaffByIdentityId(identityId);
+    }
 }

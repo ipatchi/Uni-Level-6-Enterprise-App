@@ -6,11 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import staffs.leaverequestapp.leave.LeaveContextFacade;
 import staffs.leaverequestapp.leave.application.dto.LeaveAllowanceDTO;
-import staffs.leaverequestapp.leave.application.mapper.LeaveAllowanceJpaToDTOMapper;
-import staffs.leaverequestapp.leave.persistance.entities.LeaveAllowanceJpa;
-import staffs.leaverequestapp.staff.ui.CreateStaffMemberCommand;
 
-import java.util.UUID;
+import java.security.Principal;
 
 @RequestMapping("/leave-allowance")
 @RestController
@@ -18,23 +15,29 @@ import java.util.UUID;
 public class LeaveAllowanceController {
     private final LeaveContextFacade facade;
 
-    @GetMapping("/{staff_id}")
+    @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public LeaveAllowanceDTO getLeaveAllowanceByStaffId(@PathVariable UUID staff_id) {
-        return facade.findLeaveAllowanceByUserId(staff_id);
+    public LeaveAllowanceDTO getMyLeaveAllowance(Principal principal) {
+        return facade.findMyLeaveAllowance(principal.getName());
     }
 
-    @GetMapping("/manager/{manager_id}")
+    @GetMapping("/team")
     @ResponseStatus(HttpStatus.OK)
-    public Iterable<LeaveAllowanceDTO> getLeaveAllowancesByManager(@PathVariable UUID manager_id) {
-        return facade.findLeaveAllowanceByManagerId(manager_id);
+    public Iterable<LeaveAllowanceDTO> getMyTeamLeaveAllowances(Principal principal) {
+        return facade.findMyTeamLeaveAllowances(principal.getName());
     }
 
     @PatchMapping("/edit")
     @ResponseStatus(HttpStatus.OK)
-    public LeaveAllowanceDTO editLeaveAllowance(@RequestBody AmmendLeaveAllowanceCommand command) {
-        LeaveAllowanceJpa updatedAllowanceJpa = facade.editLeaveAllowance(command);
-        return LeaveAllowanceJpaToDTOMapper.toLeaveAllowanceDTO(updatedAllowanceJpa);
+    public LeaveAllowanceDTO editLeaveAllowance(
+            @RequestBody AmmendLeaveAllowanceCommand command,
+            Principal principal
+    ) {
+        AmmendLeaveAllowanceCommand authenticatedCommand = new AmmendLeaveAllowanceCommand(
+                principal.getName(),
+                command.staffId(),
+                command.totalAllowance()
+        );
+        return facade.editLeaveAllowance(authenticatedCommand);
     }
 }
-

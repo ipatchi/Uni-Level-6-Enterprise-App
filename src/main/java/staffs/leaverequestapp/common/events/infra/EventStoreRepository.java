@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.common.events;
+package staffs.leaverequestapp.common.events.infra;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
