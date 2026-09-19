@@ -22,6 +22,7 @@ import staffs.leaverequestapp.leave.ui.RejectLeaveRequestCommand;
 import staffs.leaverequestapp.leave.ui.SubmitLeaveRequestCommand;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -48,6 +49,16 @@ public class LeaveRequestApplicationService {
         Identity<LeaveRequest> newLeaveRequestId = Identity.generateId();
         LeaveRequest leaveRequest = new LeaveRequest(newLeaveRequestId, staffId, command.startDate(), command.endDate(), command.reason());
 
+        List<LeaveRequestJpa> overlappingRequests =
+                leaveRequestRepository.findByStaffIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        staffId,
+                        java.util.List.of(LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                        command.endDate(),
+                        command.startDate());
+        if (overlappingRequests != null && !overlappingRequests.isEmpty()) {
+            throw new IllegalArgumentException("Leave request overlaps an existing pending or approved request");
+        }
+
         leaveAllowance.deductLeave(leaveRequest.getTotalDays());
         leaveAllowanceRepository.save(LeaveAllowanceDomainToJpaMapper.map(leaveAllowance));
         leaveRequestRepository.save(LeaveRequestDomainToJpaMapper.map(leaveRequest));
@@ -63,7 +74,7 @@ public class LeaveRequestApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Leave request not found with id" + command.leaveRequestId()));
 
         LeaveRequest leaveRequest = LeaveRequestJpaToDomainMapper.map(leaveRequestJpa);
-        assertManager(command.identityId(), leaveRequest.getStaffId());
+        assertCanApproveOrReject(command.identityId(), leaveRequest.getStaffId(), command.adminOverride());
 
         leaveRequest.approveRequest();
 
@@ -80,7 +91,7 @@ public class LeaveRequestApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Leave request not found with id" + command.leaveRequestId()));
 
         LeaveRequest leaveRequest = LeaveRequestJpaToDomainMapper.map(leaveRequestJpa);
-        assertManager(command.identityId(), leaveRequest.getStaffId());
+        assertCanApproveOrReject(command.identityId(), leaveRequest.getStaffId(), command.adminOverride());
 
         leaveRequest.rejectRequest();
 
@@ -142,7 +153,10 @@ public class LeaveRequestApplicationService {
                         "No staff member found for identity " + identityId));
     }
 
-    private void assertManager(String identityId, UUID staffId) {
+    private void assertCanApproveOrReject(String identityId, UUID staffId, boolean adminOverride) {
+        if (adminOverride) {
+            return;
+        }
         UUID managerId = findStaffId(identityId);
         LeaveAllowanceJpa allowance = leaveAllowanceRepository.findByStaffId(staffId)
                 .orElseThrow(() -> new IllegalArgumentException("No leave allowance found for staff member " + staffId));

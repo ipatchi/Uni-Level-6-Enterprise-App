@@ -108,6 +108,9 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
     }
 
     public void amendTotal(double newTotalAllowance){
+        if (newTotalAllowance <= 0) {
+            throw new IllegalArgumentException("Total allowance must be greater than zero");
+        }
         double remainingBalance = newTotalAllowance - this.usedAllowance;
 
         if (remainingBalance < 0){

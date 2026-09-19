@@ -32,6 +32,9 @@ public class LeaveRequest extends AggregateRoot<LeaveRequest> {
                         String reason) {
         super(id);
 
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start and end dates are required");
+        }
         if (endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("End date cannot be before start date");
         }
@@ -70,9 +73,6 @@ public class LeaveRequest extends AggregateRoot<LeaveRequest> {
 //ACTIONS!
 
     public void approveRequest() {
-        if (status == LeaveStatus.PENDING) {
-            status = LeaveStatus.APPROVED;
-        }
         switch (status) {
             case PENDING:
                 status = LeaveStatus.APPROVED;
@@ -80,8 +80,11 @@ public class LeaveRequest extends AggregateRoot<LeaveRequest> {
             case REJECTED:
                 throw new LeaveRequestCannotBeApprovedException("Rejected requests cannot be approved");
             case CANCELLED:
-                throw new LeaveRequestHasBeenCancelledException("Cancelled leave requests cannot be rejected");
+                throw new LeaveRequestHasBeenCancelledException("Cancelled leave requests cannot be approved");
+            case APPROVED:
+                throw new LeaveRequestCannotBeApprovedException("Approved requests cannot be approved again");
             default:
+                throw new LeaveRequestCannotBeApprovedException("This leave request cannot be approved");
         }
 
     }
@@ -95,13 +98,22 @@ public class LeaveRequest extends AggregateRoot<LeaveRequest> {
                 throw new LeaveRequestCannotBeRejectedException("Approved requests cannot be rejected");
             case CANCELLED:
                 throw new LeaveRequestHasBeenCancelledException("Cancelled leave requests cannot be rejected");
+            case REJECTED:
+                throw new LeaveRequestCannotBeRejectedException("Rejected requests cannot be rejected again");
             default:
+                throw new LeaveRequestCannotBeRejectedException("This leave request cannot be rejected");
         }
     }
 
     public void cancelRequest(UUID staffIdRequestingCancel) {
         if (!this.staffId.equals(staffIdRequestingCancel)) {
             throw new LeaveRequestCannotBeCancelledByProxyException("You can only cancel your own leave requests.");
+        }
+        if (status == LeaveStatus.REJECTED) {
+            throw new IllegalStateException("Rejected requests cannot be cancelled");
+        }
+        if (status == LeaveStatus.CANCELLED) {
+            throw new IllegalStateException("Cancelled requests cannot be cancelled again");
         }
         this.status = LeaveStatus.CANCELLED;
     }

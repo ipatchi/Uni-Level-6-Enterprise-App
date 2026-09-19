@@ -2,8 +2,11 @@ package staffs.leaverequestapp.leave.ui;
 
 public record ApproveLeaveRequestCommand(
         String identityId,
-        String leaveRequestId
+        String leaveRequestId,
+        boolean adminOverride
 )
 {
-//validation
+    public ApproveLeaveRequestCommand(String identityId, String leaveRequestId) {
+        this(identityId, leaveRequestId, false);
+    }
 }

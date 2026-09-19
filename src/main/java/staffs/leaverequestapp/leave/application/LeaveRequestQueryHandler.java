@@ -40,9 +40,14 @@ public class LeaveRequestQueryHandler {
         List<LeaveRequestJpa> jpaList;
 
         if (startDate != null && endDate != null) {
-            jpaList = leaveRequestRepository.findByStaffIdInAndStatusAndStartDateBetween(staffIds, LeaveStatus.PENDING, startDate, endDate);
+            jpaList = leaveRequestRepository.findByStaffIdInAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                    staffIds, LeaveStatus.PENDING, endDate, startDate);
         } else if (startDate != null) {
-            jpaList = leaveRequestRepository.findByStaffIdInAndStatusAndStartDateGreaterThanEqual(staffIds, LeaveStatus.PENDING, startDate);
+            jpaList = leaveRequestRepository.findByStaffIdInAndStatusAndEndDateGreaterThanEqual(
+                    staffIds, LeaveStatus.PENDING, startDate);
+        } else if (endDate != null) {
+            jpaList = leaveRequestRepository.findByStaffIdInAndStatusAndStartDateLessThanEqual(
+                    staffIds, LeaveStatus.PENDING, endDate);
         } else {
             jpaList = leaveRequestRepository.findByStaffIdInAndStatus(staffIds, LeaveStatus.PENDING);
         }
@@ -55,9 +60,12 @@ public class LeaveRequestQueryHandler {
     public List<LeaveRequestDTO> findAllOutstandingLeaveRequestsByDates(LocalDate startDate, LocalDate endDate) {
         List<LeaveRequestJpa> jpaList;
         if (startDate != null && endDate != null) {
-            jpaList = leaveRequestRepository.findByStatusAndStartDateBetween(LeaveStatus.PENDING, startDate, endDate);
+            jpaList = leaveRequestRepository.findByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                    LeaveStatus.PENDING, endDate, startDate);
         } else if (startDate != null) {
-            jpaList = leaveRequestRepository.findByStatusAndStartDateGreaterThanEqual(LeaveStatus.PENDING, startDate);
+            jpaList = leaveRequestRepository.findByStatusAndEndDateGreaterThanEqual(LeaveStatus.PENDING, startDate);
+        } else if (endDate != null) {
+            jpaList = leaveRequestRepository.findByStatusAndStartDateLessThanEqual(LeaveStatus.PENDING, endDate);
         } else {
             jpaList = leaveRequestRepository.findByStatus(LeaveStatus.PENDING);
         }

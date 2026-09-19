@@ -9,6 +9,7 @@ import staffs.leaverequestapp.leave.LeaveContextFacade;
 import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
 
 import java.security.Principal;
+import org.springframework.security.core.Authentication;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +59,8 @@ public class LeaveRequestController {
     @ResponseBody
     public String approveLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
         return facade.approveLeaveRequest(
-                new ApproveLeaveRequestCommand(principal.getName(), leaveRequestId)
+                new ApproveLeaveRequestCommand(principal.getName(), leaveRequestId,
+                        isAdmin(principal))
         );
     }
 
@@ -68,8 +70,15 @@ public class LeaveRequestController {
     @ResponseBody
     public String rejectLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
         return facade.rejectLeaveRequest(
-                new RejectLeaveRequestCommand(principal.getName(), leaveRequestId)
+                new RejectLeaveRequestCommand(principal.getName(), leaveRequestId,
+                        isAdmin(principal))
         );
+    }
+
+    private boolean isAdmin(Principal principal) {
+        return principal instanceof Authentication authentication
+                && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 
     //Cancel a specific leave request (as self)

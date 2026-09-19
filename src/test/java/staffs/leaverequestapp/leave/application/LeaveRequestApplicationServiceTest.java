@@ -167,6 +167,22 @@ class LeaveRequestApplicationServiceTest {
     }
 
     @Test
+    @DisplayName("An admin can approve a request without being its assigned manager")
+    void adminCanApproveLeaveRequest() {
+        ApproveLeaveRequestCommand command =
+                new ApproveLeaveRequestCommand("firebase-admin-id", VALID_REQUEST_ID, true);
+
+        when(leaveRequestRepository.findById(VALID_REQUEST_ID)).thenReturn(Optional.of(mockRequestJpa));
+
+        leaveRequestApplicationService.approveLeaveRequest(command);
+
+        ArgumentCaptor<LeaveRequestJpa> requestCaptor = ArgumentCaptor.forClass(LeaveRequestJpa.class);
+        verify(leaveRequestRepository).save(requestCaptor.capture());
+        assertEquals(LeaveStatus.APPROVED, requestCaptor.getValue().getStatus());
+        verify(leaveAllowanceRepository, never()).findByIdentityId("firebase-admin-id");
+    }
+
+    @Test
     @DisplayName("You cannot approve a leave request when the request does not exist")
     void throwWhenApprovingAndRequestDoesNotExist() {
         ApproveLeaveRequestCommand command = new ApproveLeaveRequestCommand(MANAGER_IDENTITY_ID, "INVALID-ID");
@@ -198,6 +214,22 @@ class LeaveRequestApplicationServiceTest {
         ArgumentCaptor<LeaveAllowanceJpa> allowanceCaptor = ArgumentCaptor.forClass(LeaveAllowanceJpa.class);
         verify(leaveAllowanceRepository).save(allowanceCaptor.capture());
         assertEquals(2.0, allowanceCaptor.getValue().getUsedAllowance());
+    }
+
+    @Test
+    @DisplayName("An admin can reject a request without being its assigned manager")
+    void adminCanRejectLeaveRequest() {
+        RejectLeaveRequestCommand command =
+                new RejectLeaveRequestCommand("firebase-admin-id", VALID_REQUEST_ID, true);
+
+        when(leaveRequestRepository.findById(VALID_REQUEST_ID)).thenReturn(Optional.of(mockRequestJpa));
+        when(leaveAllowanceRepository.findByStaffId(VALID_STAFF_ID)).thenReturn(Optional.of(mockAllowanceJpa));
+
+        leaveRequestApplicationService.rejectLeaveRequest(command);
+
+        ArgumentCaptor<LeaveRequestJpa> requestCaptor = ArgumentCaptor.forClass(LeaveRequestJpa.class);
+        verify(leaveRequestRepository).save(requestCaptor.capture());
+        assertEquals(LeaveStatus.REJECTED, requestCaptor.getValue().getStatus());
     }
 
     @Test

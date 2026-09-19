@@ -94,6 +94,7 @@ public class LeaveContextFacade {
                 leaveAllowanceApplicationService.ammendLeaveAllowance(command));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<LeaveRequestDTO> findFilteredOutstandingLeaveRequests(UUID staffId, UUID managerId, LocalDate startDate, LocalDate endDate) {
         if (staffId != null) {
             return leaveRequestQueryHandler.findOutstandingLeaveRequestsByStaffIdsAndDates(

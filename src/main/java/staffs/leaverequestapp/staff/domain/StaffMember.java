@@ -108,8 +108,7 @@ public class StaffMember extends AggregateRoot<StaffMember> {
         }
 
         if (newDepartment != null) {
-            String dept = newDepartment != null ? newDepartment : this.organisation.department();
-            this.organisation = new Organisation(this.organisation.hireDate(), dept, newManagerId);
+            this.organisation = new Organisation(this.organisation.hireDate(), newDepartment, this.managerId);
         }
 
         if (newRole != null || newJobLevel != null || newEmploymentType != null) {

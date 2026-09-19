@@ -29,13 +29,40 @@ public interface LeaveRequestRepository extends CrudRepository<LeaveRequestJpa, 
             List<UUID> staffIds,
             LeaveStatus leaveStatus);
 
-    List<LeaveRequestJpa> findByStatusAndStartDateBetween(
-            LeaveStatus status,
-            LocalDate startDate,
-            LocalDate endDate);
+    List<LeaveRequestJpa> findByStaffIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            UUID staffId,
+            List<LeaveStatus> statuses,
+            LocalDate endDate,
+            LocalDate startDate);
 
-    List<LeaveRequestJpa> findByStatusAndStartDateGreaterThanEqual(
+    List<LeaveRequestJpa> findByStaffIdInAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            List<UUID> staffIds,
+            LeaveStatus status,
+            LocalDate endDate,
+            LocalDate startDate);
+
+    List<LeaveRequestJpa> findByStaffIdInAndStatusAndEndDateGreaterThanEqual(
+            List<UUID> staffIds,
             LeaveStatus status,
             LocalDate startDate);
+
+    List<LeaveRequestJpa> findByStaffIdInAndStatusAndStartDateLessThanEqual(
+            List<UUID> staffIds,
+            LeaveStatus status,
+            LocalDate endDate);
+
+    List<LeaveRequestJpa> findByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            LeaveStatus status,
+            LocalDate endDate,
+            LocalDate startDate);
+
+    List<LeaveRequestJpa> findByStatusAndEndDateGreaterThanEqual(
+            LeaveStatus status,
+            LocalDate startDate);
+
+    List<LeaveRequestJpa> findByStatusAndStartDateLessThanEqual(
+            LeaveStatus status,
+            LocalDate endDate);
+
     List<LeaveRequestJpa> findByStatus(LeaveStatus status);
 }
