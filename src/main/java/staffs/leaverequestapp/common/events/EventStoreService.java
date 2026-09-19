@@ -48,7 +48,7 @@ public class EventStoreService {
             event.setStatus(statusOfMessageDelivery.name());
             if (incrementRetryCount) event.setRetryCount(event.getRetryCount() + 1);
             eventsStore.save(event);
-            log.error("Event {} marked as {}", eventId, event.getStatus());
+            log.info("Event {} marked as {}", eventId, event.getStatus());
         });
     }
 }

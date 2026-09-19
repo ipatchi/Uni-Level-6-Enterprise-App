@@ -92,4 +92,23 @@ public class LeaveAllowance extends AggregateRoot<LeaveAllowance> {
     public double getRemainingBalance() {
         return this.totalAllowance - this.usedAllowance;
     }
+
+    public void updateStaffDetails(FullName updatedFullName, UUID newManagerId) {
+        if (updatedFullName != null) {
+            this.fullName = updatedFullName;
+        }
+        if (newManagerId != null) {
+            this.managerId = newManagerId;
+        }
+    }
+
+    public void amendTotal(double newTotalAllowance){
+        double remainingBalance = newTotalAllowance - this.usedAllowance;
+
+        if (remainingBalance < 0){
+            throw new IllegalArgumentException("New allowance cannot be less than staff members used allowance");
+        }
+
+        this.totalAllowance = newTotalAllowance;
+    }
 }

@@ -1,0 +1,34 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api
+
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+
+  sql:
+    init:
+      mode: always
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VHOST}
+    ssl:
+      enabled: true
+
+# exchange and queue
+rabbitmq:
+  outbox:
+    bindings:
+      "[staffs.leaverequestapp.common.events.StaffMemberHiredEvent]":
+        exchange: "staff.exchange"
+        routing-key: "staff.hired"
+      "[staffs.leaverequestapp.common.events.StaffMemberAmendedEvent]":
+        exchange: "staff.exchange"
+        routing-key: "staff.amended"
+

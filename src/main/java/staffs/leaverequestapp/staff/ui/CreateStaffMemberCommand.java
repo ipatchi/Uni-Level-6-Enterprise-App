@@ -11,7 +11,7 @@ public record CreateStaffMemberCommand(
         String email,
         LocalDate hireDate,
         String department,
-        UUID lineManagerId,
+        UUID managerId,
         String currentRole,
         LocalDate roleStartDate,
         String jobLevel,

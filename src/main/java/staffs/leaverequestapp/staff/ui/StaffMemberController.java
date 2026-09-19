@@ -20,6 +20,12 @@ public class StaffMemberController {
         return facade.createStaffMember(command);
     }
 
+    @PatchMapping("/admin/{staffId}/edit")
+    @ResponseStatus(HttpStatus.OK)
+    public void appendStaffMember(@PathVariable UUID staffId, @RequestBody AmmendStaffMemberCommand command ) {
+        facade.amendStaffMember(command.withStaffId(staffId));
+    }
+
     @GetMapping("/{staffId}")
     @ResponseStatus(HttpStatus.OK)
     public StaffDTO getStaffMemberById(@PathVariable UUID staffId) {

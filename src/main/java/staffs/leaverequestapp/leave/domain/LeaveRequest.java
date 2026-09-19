@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.ToString;
 import staffs.leaverequestapp.common.domain.AggregateRoot;
 import staffs.leaverequestapp.common.domain.Identity;
+import staffs.leaverequestapp.leave.domain.exceptions.LeaveRequestCannotBeApprovedException;
 import staffs.leaverequestapp.leave.domain.exceptions.LeaveRequestCannotBeCancelledByProxyException;
 import staffs.leaverequestapp.leave.domain.exceptions.LeaveRequestCannotBeRejectedException;
+import staffs.leaverequestapp.leave.domain.exceptions.LeaveRequestHasBeenCancelledException;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -71,6 +73,17 @@ public class LeaveRequest extends AggregateRoot<LeaveRequest> {
         if (status == LeaveStatus.PENDING) {
             status = LeaveStatus.APPROVED;
         }
+        switch (status) {
+            case PENDING:
+                status = LeaveStatus.APPROVED;
+                break;
+            case REJECTED:
+                throw new LeaveRequestCannotBeApprovedException("Rejected requests cannot be approved");
+            case CANCELLED:
+                throw new LeaveRequestHasBeenCancelledException("Cancelled leave requests cannot be rejected");
+            default:
+        }
+
     }
 
     public void rejectRequest() {
@@ -80,6 +93,8 @@ public class LeaveRequest extends AggregateRoot<LeaveRequest> {
                 break;
             case APPROVED:
                 throw new LeaveRequestCannotBeRejectedException("Approved requests cannot be rejected");
+            case CANCELLED:
+                throw new LeaveRequestHasBeenCancelledException("Cancelled leave requests cannot be rejected");
             default:
         }
     }

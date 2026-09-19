@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import staffs.leaverequestapp.staff.application.StaffApplicationService;
 import staffs.leaverequestapp.staff.application.StaffQueryHandler;
 import staffs.leaverequestapp.staff.application.dto.StaffDTO;
+import staffs.leaverequestapp.staff.ui.AmmendStaffMemberCommand;
 import staffs.leaverequestapp.staff.ui.CreateStaffMemberCommand;
 
 import java.util.UUID;
@@ -25,5 +26,10 @@ public class StaffContextFacade {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public StaffDTO getStaffById(@PathVariable UUID staffId) {
         return staffQueryHandler.getStaffById(staffId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void amendStaffMember(AmmendStaffMemberCommand command) {
+        staffApplicationService.ammendStaffMember(command);
     }
 }
