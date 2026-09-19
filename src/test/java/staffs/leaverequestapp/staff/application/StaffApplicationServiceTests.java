@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.staff;
+package staffs.leaverequestapp.staff.application;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import staffs.leaverequestapp.common.events.infra.DomainEventManager;
 import staffs.leaverequestapp.staff.application.StaffApplicationService;
 import staffs.leaverequestapp.staff.ui.CreateStaffMemberCommand;
 import staffs.leaverequestapp.staff.domain.EmploymentStatus;
@@ -28,6 +29,9 @@ class StaffApplicationServiceTests {
     @Mock
     private StaffRepository staffRepository;
 
+    @Mock
+    private DomainEventManager domainEventManager;
+
     @InjectMocks
     private StaffApplicationService service;
 
@@ -45,7 +49,8 @@ class StaffApplicationServiceTests {
                 LocalDate.now(),
                 "L2",
                 EmploymentType.FULL_TIME,
-                EmploymentStatus.ACTIVE
+                EmploymentStatus.ACTIVE,
+                "firebase-identity"
         );
 
         UUID generatedId = service.createStaffMember(command);
@@ -56,7 +61,8 @@ class StaffApplicationServiceTests {
         StaffJpa savedEntity = jpaCaptor.getValue();
 
         assertNotNull(generatedId);
-        assertEquals(generatedId.toString(), savedEntity.getStaffId());
+        assertEquals(generatedId, savedEntity.getStaffId());
+        assertEquals("firebase-identity", savedEntity.getIdentityId());
 
         assertEquals("Test", savedEntity.getIdentity().firstName());
         assertEquals("User", savedEntity.getIdentity().surname());

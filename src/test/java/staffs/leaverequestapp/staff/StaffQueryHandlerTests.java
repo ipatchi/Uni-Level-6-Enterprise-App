@@ -42,7 +42,7 @@ class StaffQueryHandlerTests {
     void getStaffByIdSuccess() {
         UUID targetId = UUID.randomUUID();
         StaffJpa mockJpa = new StaffJpa();
-        mockJpa.setStaffId(targetId.toString());
+        mockJpa.setStaffId(targetId);
         mockJpa.setIdentity(new FullName("Test", "User"));
         mockJpa.setEmail("TestUser@email.com");
         mockJpa.setEmploymentStatus(EmploymentStatus.ACTIVE);
@@ -59,7 +59,7 @@ class StaffQueryHandlerTests {
         mockPlacementJpa.setEmploymentType(EmploymentType.FULL_TIME);
         mockJpa.setPlacement(mockPlacementJpa);
 
-        when(staffRepository.findById(targetId.toString())).thenReturn(Optional.of(mockJpa));
+        when(staffRepository.findByStaffId(targetId)).thenReturn(Optional.of(mockJpa));
 
         StaffDTO resultDto = handler.getStaffById(targetId);
 
@@ -68,20 +68,20 @@ class StaffQueryHandlerTests {
         assertEquals("TestUser@email.com", resultDto.email());
         assertEquals("Testing", resultDto.organisation().department());
 
-        verify(staffRepository).findById(targetId.toString());
+        verify(staffRepository).findByStaffId(targetId);
     }
 
     @Test
     @DisplayName("Throws an exception when requesting a staff ID that does not exist")
     void getStaffByIdNotFound() {
         UUID missingId = UUID.randomUUID();
-        when(staffRepository.findById(missingId.toString())).thenReturn(Optional.empty());
+        when(staffRepository.findByStaffId(missingId)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 handler.getStaffById(missingId)
         );
 
         assertEquals("Staff member not found with ID: " + missingId, exception.getMessage());
-        verify(staffRepository).findById(missingId.toString());
+        verify(staffRepository).findByStaffId(missingId);
     }
 }

@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.leave;
+package staffs.leaverequestapp.leave.ui;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,17 +7,18 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.MediaType;
 import staffs.leaverequestapp.leave.application.dto.LeaveAllowanceDTO;
+import staffs.leaverequestapp.leave.LeaveContextFacade;
 import staffs.leaverequestapp.leave.ui.LeaveAllowanceController;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,29 +41,20 @@ class LeaveAllowanceControllerTests {
     void getLeaveBalanceForStaff() throws Exception {
         UUID expectedId = UUID.randomUUID();
         LeaveAllowanceDTO mockDto = new LeaveAllowanceDTO(
-                expectedId, VALID_STAFF_ID, "test", "user", VALID_MANAGER_ID, 2026, 25.0, 5.0
+                expectedId, VALID_STAFF_ID, "test", "user", VALID_MANAGER_ID, 2026, 25.0, 5.0,
+                "firebase-staff"
         );
 
-        // Reverted to returning a single DTO
-        when(facade.findLeaveAllowanceByUserId(VALID_STAFF_ID)).thenReturn(mockDto);
+        when(facade.findMyLeaveAllowance("firebase-staff")).thenReturn(mockDto);
 
-        mockMvc.perform(get("/leave-allowance/{staff_id}", VALID_STAFF_ID))
+        mockMvc.perform(get("/leave-allowance/me")
+                        .principal(() -> "firebase-staff"))
                 .andExpect(status().isOk())
-                // Reverted back to the root JSON object
                 .andExpect(jsonPath("$.id").value(expectedId.toString()))
                 .andExpect(jsonPath("$.totalAllowance").value(25.0))
                 .andExpect(jsonPath("$.remainingAllowance").value(20.0));
 
-        verify(facade).findLeaveAllowanceByUserId(VALID_STAFF_ID);
-    }
-
-    @Test
-    @DisplayName("You cannot get the leave balance with a malformed staff id")
-    void getLeaveBalanceForStaffWithMalformedId() throws Exception {
-        mockMvc.perform(get("/leave-allowance/{staff_id}", "invalid-uuid"))
-                .andExpect(status().isBadRequest());
-
-        verify(facade, never()).findLeaveAllowanceByUserId(any());
+        verify(facade).findMyLeaveAllowance("firebase-staff");
     }
 
     @Test
@@ -70,27 +62,43 @@ class LeaveAllowanceControllerTests {
     void getLeaveBalancesForManager() throws Exception {
         UUID expectedId = UUID.randomUUID();
         LeaveAllowanceDTO mockDto = new LeaveAllowanceDTO(
-                expectedId, VALID_STAFF_ID, "test", "user", VALID_MANAGER_ID, 2026, 25.0, 5.0
+                expectedId, VALID_STAFF_ID, "test", "user", VALID_MANAGER_ID, 2026, 25.0, 5.0,
+                "firebase-staff"
         );
 
-        when(facade.findLeaveAllowanceByManagerId(VALID_MANAGER_ID)).thenReturn(List.of(mockDto));
+        when(facade.findMyTeamLeaveAllowances("firebase-manager")).thenReturn(List.of(mockDto));
 
-        mockMvc.perform(get("/leave-allowance/manager/{manager_id}", VALID_MANAGER_ID))
+        mockMvc.perform(get("/leave-allowance/team")
+                        .principal(() -> "firebase-manager"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(expectedId.toString()))
                 .andExpect(jsonPath("$[0].totalAllowance").value(25.0));
 
-        verify(facade).findLeaveAllowanceByManagerId(VALID_MANAGER_ID);
+        verify(facade).findMyTeamLeaveAllowances("firebase-manager");
     }
 
     @Test
-    @DisplayName("You cannot get a manager's team leave balances with a malformed manager id")
-    void getLeaveBalancesForManagerWithMalformedId() throws Exception {
-        mockMvc.perform(get("/leave-allowance/manager/{manager_id}", "invalid-uuid"))
-                .andExpect(status().isBadRequest());
+    @DisplayName("Allowance edits use the authenticated JWT identity")
+    void editAllowanceUsesAuthenticatedIdentity() throws Exception {
+        mockMvc.perform(patch("/leave-allowance/edit")
+                        .principal(() -> "firebase-admin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "staffId": "11111111-1111-1111-1111-111111111111",
+                                  "totalAllowance": 30.0
+                                }
+                                """))
+                .andExpect(status().isOk());
 
-        verify(facade, never()).findLeaveAllowanceByManagerId(any());
+        org.mockito.ArgumentCaptor<AmmendLeaveAllowanceCommand> captor =
+                org.mockito.ArgumentCaptor.forClass(AmmendLeaveAllowanceCommand.class);
+        verify(facade).editLeaveAllowance(captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().identityId())
+                .isEqualTo("firebase-admin");
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().staffId())
+                .isEqualTo(VALID_STAFF_ID);
     }
 }

@@ -70,6 +70,32 @@ class LeaveAllowanceQueryHandlerTest {
     }
 
     @Test
+    @DisplayName("You can resolve an allowance using the IAM identity id")
+    void getLeaveBalanceByIdentityId() {
+        String identityId = "firebase-staff";
+        UUID expectedStaffId = UUID.randomUUID();
+
+        LeaveAllowanceJpa jpa = new LeaveAllowanceJpa();
+        jpa.setId(UUID.randomUUID().toString());
+        jpa.setFullName(new FullName("test", "user"));
+        jpa.setStaffId(expectedStaffId);
+        jpa.setManagerId(UUID.randomUUID());
+        jpa.setTotalAllowance(25.0);
+        jpa.setUsedAllowance(5.0);
+        jpa.setYear(2026);
+        jpa.setIdentityId(identityId);
+
+        when(leaveAllowanceRepository.findByIdentityId(identityId))
+                .thenReturn(Optional.of(jpa));
+
+        LeaveAllowanceDTO result = queryHandler.findLeaveAllowanceByIdentityId(identityId);
+
+        assertThat(result.staffId()).isEqualTo(expectedStaffId);
+        assertThat(result.identityId()).isEqualTo(identityId);
+        verify(leaveAllowanceRepository).findByIdentityId(identityId);
+    }
+
+    @Test
     @DisplayName("You can get a list of leave balances by manager id")
     void getLeaveBalancesByManagerId() {
         UUID expectedId = UUID.randomUUID();

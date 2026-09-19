@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.leave;
+package staffs.leaverequestapp.leave.domain;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +23,7 @@ public class LeaveAllowanceAggregateTests {
     private FullName validFullName;
     private final int VALID_YEAR = 2026;
     private final double STANDARD_ALLOWANCE = 28.0;
+    private final String validIdentityId = "firebase-identity";
 
     @BeforeEach
     void setUp() {
@@ -39,7 +40,8 @@ public class LeaveAllowanceAggregateTests {
                 validManagerId,
                 VALID_YEAR,
                 STANDARD_ALLOWANCE,
-                validFullName
+                validFullName,
+                validIdentityId
         );
     }
 
@@ -68,7 +70,8 @@ public class LeaveAllowanceAggregateTests {
                 validManagerId,
                 VALID_YEAR,
                 0.0,
-                validFullName))
+                validFullName,
+                validIdentityId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Total allowance must be greater than zero");
 
@@ -77,7 +80,8 @@ public class LeaveAllowanceAggregateTests {
                 validManagerId,
                 VALID_YEAR,
                 -5.0,
-                validFullName))
+                validFullName,
+                validIdentityId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Total allowance must be greater than zero");
     }

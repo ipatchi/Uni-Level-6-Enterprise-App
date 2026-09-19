@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.staff;
+package staffs.leaverequestapp.staff.ui;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import staffs.leaverequestapp.staff.ui.CreateStaffMemberCommand;
+import staffs.leaverequestapp.staff.StaffContextFacade;
 import staffs.leaverequestapp.staff.application.dto.StaffDTO;
 import staffs.leaverequestapp.staff.domain.EmploymentStatus;
 import staffs.leaverequestapp.staff.domain.EmploymentType;
@@ -53,7 +54,8 @@ class StaffControllerTests {
                 LocalDate.now(),
                 "L2",
                 EmploymentType.FULL_TIME,
-                EmploymentStatus.ACTIVE
+                EmploymentStatus.ACTIVE,
+                "firebase-identity"
         );
 
         when(facade.createStaffMember(any(CreateStaffMemberCommand.class))).thenReturn(expectedId);
@@ -74,7 +76,16 @@ class StaffControllerTests {
 
         StaffDTO.OrganisationDTO orgDto = new StaffDTO.OrganisationDTO(LocalDate.now(), "Testing", null);
         StaffDTO.PlacementDTO placementDto = new StaffDTO.PlacementDTO("Tester", LocalDate.now(), "L6", EmploymentType.FULL_TIME);
-        StaffDTO mockDto = new StaffDTO(staffId, "Test", "User", "TestUser@email.com", orgDto, placementDto, EmploymentStatus.ACTIVE);
+        StaffDTO mockDto = new StaffDTO(
+                staffId,
+                "Test",
+                "User",
+                "TestUser@email.com",
+                orgDto,
+                placementDto,
+                EmploymentStatus.ACTIVE,
+                "firebase-identity"
+        );
 
         when(facade.getStaffById(staffId)).thenReturn(mockDto);
 

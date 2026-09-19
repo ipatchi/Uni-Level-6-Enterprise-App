@@ -1,13 +1,10 @@
-package staffs.leaverequestapp.staff;
+package staffs.leaverequestapp.staff.domain;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import staffs.leaverequestapp.common.domain.FullName;
 import staffs.leaverequestapp.common.domain.Identity;
-import staffs.leaverequestapp.staff.domain.*;
-import staffs.leaverequestapp.staff.persistance.entities.StaffJpa;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Staff Aggregate Tests")
 class StaffAggregateTests {
-    Identity<StaffJpa> validId = Identity.generateId();
+    Identity<StaffMember> validId = Identity.generateId();
     private final FullName validName = new FullName("Test", "User");
     private final Organisation validOrg = new Organisation(LocalDate.now(), "Testing", null);
     private final Placement validPlacement = new Placement("Tester", LocalDate.now(), "Testing Level", EmploymentType.FULL_TIME);
@@ -27,7 +24,7 @@ class StaffAggregateTests {
         @Test
         @DisplayName("Successfully hiring a staff member enforces the ACTIVE status")
         void validHire() {
-            StaffMember newStaff = StaffMember.hire(validId, validName, "test.user@email.com", validOrg, validPlacement);
+            StaffMember newStaff = StaffMember.hire(validId, validName, "test.user@email.com", validOrg, validPlacement, null, "firebase-identity");
             assertNotNull(newStaff);
             assertInstanceOf(UUID.class, newStaff.getStaffId(), "The generated ID must be a valid UUID");
             assertEquals("test.user@email.com", newStaff.getEmail());
@@ -38,7 +35,7 @@ class StaffAggregateTests {
         @DisplayName("Cannot create user if email address does not contain an @ symbol")
         void invalidEmailFormat() {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                    StaffMember.hire(validId, validName, "testuseremail.com", validOrg, validPlacement)
+                    StaffMember.hire(validId, validName, "testuseremail.com", validOrg, validPlacement, null, "firebase-identity")
             );
 
             assertEquals("A valid email address is required", exception.getMessage());
@@ -48,7 +45,7 @@ class StaffAggregateTests {
         @DisplayName("Cannot create user if email address is null")
         void nullEmail() {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                    StaffMember.hire(validId, validName, null, validOrg, validPlacement)
+                    StaffMember.hire(validId, validName, null, validOrg, validPlacement, null, "firebase-identity")
             );
 
             assertEquals("A valid email address is required", exception.getMessage());

@@ -12,6 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import staffs.leaverequestapp.leave.application.LeaveAllowanceQueryHandler;
+import staffs.leaverequestapp.leave.application.LeaveAllowanceApplicationService;
 import staffs.leaverequestapp.leave.application.LeaveRequestApplicationService;
 import staffs.leaverequestapp.leave.application.LeaveRequestQueryHandler;
 import staffs.leaverequestapp.leave.application.dto.LeaveAllowanceDTO;
@@ -51,6 +52,9 @@ class ContextFacadeTests {
     @MockitoBean
     private LeaveRequestApplicationService leaveRequestApplicationService;
 
+    @MockitoBean
+    private LeaveAllowanceApplicationService leaveAllowanceApplicationService;
+
     private LeaveAllowanceDTO mockAllowanceDTO;
     private LeaveRequestDTO mockRequestDTO;
     private SubmitLeaveRequestCommand mockSubmitCommand;
@@ -68,27 +72,34 @@ class ContextFacadeTests {
     @WithMockUser(roles = "MANAGER")
     @DisplayName("MANAGER role can access get team leave requests")
     void managerCanGetTeamLeaveRequests() {
-        // Arrange: Stub the record method so our stream mapping in the facade extracts the ID correctly
-        when(mockAllowanceDTO.staffId()).thenReturn(VALID_STAFF_ID);
+        LeaveAllowanceDTO managerAllowance = mock(LeaveAllowanceDTO.class);
+        LeaveAllowanceDTO teamAllowance = mock(LeaveAllowanceDTO.class);
+
+        when(managerAllowance.staffId()).thenReturn(VALID_MANAGER_ID);
+        when(teamAllowance.staffId()).thenReturn(VALID_STAFF_ID);
+        when(leaveAllowanceQueryHandler.findLeaveAllowanceByIdentityId("manager-identity"))
+                .thenReturn(managerAllowance);
         when(leaveAllowanceQueryHandler.findLeaveAllowanceByManagerId(VALID_MANAGER_ID))
-                .thenReturn(List.of(mockAllowanceDTO));
-        when(leaveRequestQueryHandler.findLeaveRequestsByStaffIds(List.of(VALID_STAFF_ID)))
+                .thenReturn(List.of(teamAllowance));
+        when(leaveRequestQueryHandler.findOutstandingLeaveRequestsByStaffIdsAndDates(
+                List.of(VALID_STAFF_ID), null, null))
                 .thenReturn(List.of(mockRequestDTO));
 
         // Act
-        List<LeaveRequestDTO> result = facade.findLeaveRequestsByManagerId(VALID_MANAGER_ID);
+        List<LeaveRequestDTO> result = facade.findTeamLeaveOutstandingRequests("manager-identity", null, null);
 
         // Assert
         assertThat(result).containsExactly(mockRequestDTO);
         verify(leaveAllowanceQueryHandler).findLeaveAllowanceByManagerId(VALID_MANAGER_ID);
-        verify(leaveRequestQueryHandler).findLeaveRequestsByStaffIds(List.of(VALID_STAFF_ID));
+        verify(leaveRequestQueryHandler).findOutstandingLeaveRequestsByStaffIdsAndDates(
+                List.of(VALID_STAFF_ID), null, null);
     }
 
     @Test
     @WithMockUser(roles = "USER")
     @DisplayName("USER role is denied access to get team leave requests")
     void userCannotGetTeamLeaveRequests() {
-        assertThatThrownBy(() -> facade.findLeaveRequestsByManagerId(VALID_MANAGER_ID))
+        assertThatThrownBy(() -> facade.findTeamLeaveOutstandingRequests("manager-identity", null, null))
                 .isInstanceOf(AccessDeniedException.class);
 
         verifyNoInteractions(leaveAllowanceQueryHandler);

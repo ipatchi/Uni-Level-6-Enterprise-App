@@ -21,7 +21,8 @@ public class StaffDTOTests {
     @DisplayName("Successfully creates a fully populated DTO with nested records")
     void validDTO() {
         StaffDTO dto = new StaffDTO(
-                validId, "Test", "User", "testuser@email.com", validOrg, validPlacement, EmploymentStatus.ACTIVE
+                validId, "Test", "User", "testuser@email.com", validOrg, validPlacement,
+                EmploymentStatus.ACTIVE, "firebase-identity"
         );
 
         assertNotNull(dto);
@@ -43,7 +44,8 @@ public class StaffDTOTests {
     @DisplayName("DTO creation fails if required identity fields are null")
     void nullValidation() {
         assertThrows(NullPointerException.class, () -> new StaffDTO(
-                UUID.randomUUID(), null, "user", "testuser@email.com", null, null, EmploymentStatus.ACTIVE
+                UUID.randomUUID(), null, "user", "testuser@email.com", null, null,
+                EmploymentStatus.ACTIVE, "firebase-identity"
         ), "First name cannot be null");
     }
 }

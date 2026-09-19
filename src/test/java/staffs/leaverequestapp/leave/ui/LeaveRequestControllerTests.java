@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.leave;
+package staffs.leaverequestapp.leave.ui;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
 import staffs.leaverequestapp.leave.domain.LeaveStatus;
+import staffs.leaverequestapp.leave.LeaveContextFacade;
 import staffs.leaverequestapp.leave.ui.ApproveLeaveRequestCommand;
 import staffs.leaverequestapp.leave.ui.LeaveRequestController;
 import staffs.leaverequestapp.leave.ui.RejectLeaveRequestCommand;
@@ -36,8 +37,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LeaveRequestControllerTests {
 
     private static final UUID VALID_STAFF_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID VALID_MANAGER_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final String VALID_REQUEST_ID = "REQ-123";
+    private static final String STAFF_IDENTITY_ID = "firebase-staff";
+    private static final String MANAGER_IDENTITY_ID = "firebase-manager";
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,37 +63,31 @@ class LeaveRequestControllerTests {
     }
 
     @Test
-    @DisplayName("You can get leave requests by staff id")
+    @DisplayName("You can get your leave requests using the JWT identity")
     void getLeaveRequestsByStaffId() throws Exception {
-        when(facade.findLeaveRequestsByStaffId(VALID_STAFF_ID)).thenReturn(List.of(mockLeaveRequestDTO));
+        when(facade.findMyLeaveRequests(STAFF_IDENTITY_ID)).thenReturn(List.of(mockLeaveRequestDTO));
 
-        mockMvc.perform(get("/leave-requests/{staff_id}", VALID_STAFF_ID))
+        mockMvc.perform(get("/leave-requests/me")
+                        .principal(() -> STAFF_IDENTITY_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(VALID_REQUEST_ID))
                 .andExpect(jsonPath("$[0].totalDays").value(2.0));
 
-        verify(facade).findLeaveRequestsByStaffId(VALID_STAFF_ID);
+        verify(facade).findMyLeaveRequests(STAFF_IDENTITY_ID);
     }
 
     @Test
-    @DisplayName("You cannot get leave requests with a malformed staff id")
-    void getLeaveRequestsByStaffIdWithMalformedId() throws Exception {
-        mockMvc.perform(get("/leave-requests/{staff_id}", "invalid-uuid"))
-                .andExpect(status().isBadRequest());
-
-        verify(facade, never()).findLeaveRequestsByStaffId(any());
-    }
-
-    @Test
-    @DisplayName("You can get leave requests by manager id")
+    @DisplayName("You can get your team's outstanding leave requests using the JWT identity")
     void getLeaveRequestsByManagerId() throws Exception {
-        when(facade.findLeaveRequestsByManagerId(VALID_MANAGER_ID)).thenReturn(List.of(mockLeaveRequestDTO));
+        when(facade.findTeamLeaveOutstandingRequests(MANAGER_IDENTITY_ID, null, null))
+                .thenReturn(List.of(mockLeaveRequestDTO));
 
-        mockMvc.perform(get("/leave-requests/manager/{manager_id}", VALID_MANAGER_ID))
+        mockMvc.perform(get("/leave-requests/team")
+                        .principal(() -> MANAGER_IDENTITY_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(VALID_REQUEST_ID));
 
-        verify(facade).findLeaveRequestsByManagerId(VALID_MANAGER_ID);
+        verify(facade).findTeamLeaveOutstandingRequests(MANAGER_IDENTITY_ID, null, null);
     }
 
     @Test
@@ -99,7 +95,6 @@ class LeaveRequestControllerTests {
     void createLeaveRequest() throws Exception {
         String jsonPayload = """
                 {
-                    "staffId": "11111111-1111-1111-1111-111111111111",
                     "startDate": "2026-10-01",
                     "endDate": "2026-10-05",
                     "reason": "Vacation"
@@ -108,7 +103,8 @@ class LeaveRequestControllerTests {
 
         mockMvc.perform(post("/leave-requests")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
+                .principal(() -> STAFF_IDENTITY_ID)
+                .content(jsonPayload))
                 .andExpect(status().isCreated());
 
         verify(facade).makeLeaveRequest(any(SubmitLeaveRequestCommand.class));
@@ -121,7 +117,8 @@ class LeaveRequestControllerTests {
 
         mockMvc.perform(post("/leave-requests")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(malformedJson))
+                .principal(() -> STAFF_IDENTITY_ID)
+                .content(malformedJson))
                 .andExpect(status().isBadRequest());
 
         verify(facade, never()).makeLeaveRequest(any());
@@ -130,16 +127,8 @@ class LeaveRequestControllerTests {
     @Test
     @DisplayName("You can approve a leave request")
     void approveLeaveRequest() throws Exception {
-        String jsonPayload = """
-                {
-                    "leaveRequestId": "REQ-123",
-                    "managerId": "22222222-2222-2222-2222-222222222222"
-                }
-                """;
-
         mockMvc.perform(patch("/leave-requests/{request_id}/approve", VALID_REQUEST_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
+                        .principal(() -> MANAGER_IDENTITY_ID))
                 .andExpect(status().isOk());
 
         verify(facade).approveLeaveRequest(any(ApproveLeaveRequestCommand.class));
@@ -148,16 +137,8 @@ class LeaveRequestControllerTests {
     @Test
     @DisplayName("You can reject a leave request")
     void rejectLeaveRequest() throws Exception {
-        String jsonPayload = """
-                {
-                    "leaveRequestId": "REQ-123",
-                    "managerId": "22222222-2222-2222-2222-222222222222"
-                }
-                """;
-
         mockMvc.perform(patch("/leave-requests/{request_id}/reject", VALID_REQUEST_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
+                        .principal(() -> MANAGER_IDENTITY_ID))
                 .andExpect(status().isOk());
 
         verify(facade).rejectLeaveRequest(any(RejectLeaveRequestCommand.class));

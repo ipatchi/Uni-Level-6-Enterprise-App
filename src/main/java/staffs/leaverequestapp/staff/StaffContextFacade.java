@@ -18,7 +18,7 @@ public class StaffContextFacade {
     private final StaffApplicationService staffApplicationService;
     private final StaffQueryHandler staffQueryHandler;
 
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public UUID createStaffMember(CreateStaffMemberCommand command) {
         return staffApplicationService.createStaffMember(command);
     }

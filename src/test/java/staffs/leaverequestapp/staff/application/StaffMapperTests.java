@@ -1,4 +1,4 @@
-package staffs.leaverequestapp.staff;
+package staffs.leaverequestapp.staff.application;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,15 +24,24 @@ class StaffMapperTests {
     @Test
     @DisplayName("Successfully maps a pure Domain StaffMember to a JPA Entity")
     void domainToJpa() {
-        Identity<StaffJpa> validId = Identity.generateId();
+        Identity<StaffMember> validId = Identity.generateId();
 
         Organisation org = new Organisation(LocalDate.now(), "Testing", null);
         Placement placement = new Placement("Tester", LocalDate.now(), "L2", EmploymentType.FULL_TIME);
-        StaffMember domainStaff = StaffMember.hire(validId, new FullName("Test", "User"), "TestUser@email.com", org, placement);
+        StaffMember domainStaff = StaffMember.hire(
+                validId,
+                new FullName("Test", "User"),
+                "TestUser@email.com",
+                org,
+                placement,
+                null,
+                "firebase-identity"
+        );
 
         StaffJpa jpa = StaffDomainToJpaMapper.toJpa(domainStaff);
 
         assertNotNull(jpa.getStaffId());
+        assertEquals("firebase-identity", jpa.getIdentityId());
         assertEquals("TestUser@email.com", jpa.getEmail());
         assertEquals("Test", jpa.getIdentity().firstName());
         assertEquals("User", jpa.getIdentity().surname());
@@ -47,7 +56,7 @@ class StaffMapperTests {
 
         StaffJpa staffJpa = new StaffJpa();
 
-        staffJpa.setStaffId(staffId.toString());
+        staffJpa.setStaffId(staffId);
         staffJpa.setIdentity(new FullName("Test", "User"));
         staffJpa.setEmail("TestUser@email.com");
         staffJpa.setEmploymentStatus(EmploymentStatus.ACTIVE);

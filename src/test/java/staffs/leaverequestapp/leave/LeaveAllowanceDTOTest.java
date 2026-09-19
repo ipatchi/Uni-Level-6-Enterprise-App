@@ -22,7 +22,8 @@ class LeaveAllowanceDTOTest {
                 UUID.randomUUID(),
                 2026,
                 25.0,
-                4.5
+                4.5,
+                "firebase-identity"
         );
 
         assertThat(dto.remainingAllowance()).isEqualTo(20.5);
