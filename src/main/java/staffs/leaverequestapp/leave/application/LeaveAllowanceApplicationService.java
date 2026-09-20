@@ -70,10 +70,6 @@ public class LeaveAllowanceApplicationService {
 
     @Transactional
     public LeaveAllowanceJpa ammendLeaveAllowance(AmmendLeaveAllowanceCommand command) {
-        leaveAllowanceRepository.findByIdentityId(command.identityId())
-                .orElseThrow(() -> new LeaveAllowanceNotFoundException(
-                        "No leave allowance found for identity " + command.identityId()));
-
         Optional<LeaveAllowanceJpa> allowanceJpa = leaveAllowanceRepository.findByStaffId(command.staffId());
         if (allowanceJpa.isEmpty()) {
             throw new LeaveAllowanceNotFoundException("No leave allowance found for staff member " + command.staffId());

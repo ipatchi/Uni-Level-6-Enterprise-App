@@ -10,6 +10,7 @@ import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
 
 import java.security.Principal;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -57,7 +58,8 @@ public class LeaveRequestController {
     @PatchMapping("{leaveRequestId}/approve")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public String approveLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
+    public String approveLeaveRequest(@PathVariable String leaveRequestId,
+                                      Principal principal) {
         return facade.approveLeaveRequest(
                 new ApproveLeaveRequestCommand(principal.getName(), leaveRequestId,
                         isAdmin(principal))
@@ -68,7 +70,8 @@ public class LeaveRequestController {
     @PatchMapping("{leaveRequestId}/reject")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public String rejectLeaveRequest(@PathVariable String leaveRequestId, Principal principal) {
+    public String rejectLeaveRequest(@PathVariable String leaveRequestId,
+                                     Principal principal) {
         return facade.rejectLeaveRequest(
                 new RejectLeaveRequestCommand(principal.getName(), leaveRequestId,
                         isAdmin(principal))
@@ -76,8 +79,11 @@ public class LeaveRequestController {
     }
 
     private boolean isAdmin(Principal principal) {
-        return principal instanceof Authentication authentication
-                && authentication.getAuthorities().stream()
+        Authentication authentication = principal instanceof Authentication principalAuthentication
+                ? principalAuthentication
+                : SecurityContextHolder.getContext().getAuthentication();
+
+        return authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 

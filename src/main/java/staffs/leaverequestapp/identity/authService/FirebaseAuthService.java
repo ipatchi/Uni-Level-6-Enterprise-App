@@ -54,7 +54,7 @@ public class FirebaseAuthService {
         Role confirmedRole = role != null ? role : Role.STAFF;
 
         Map<String, Object> customClaims = Map.of(
-                "role", confirmedRole,
+                "role", confirmedRole.name(),
                 "admin", confirmedRole == Role.ADMIN
         );
 
@@ -64,7 +64,7 @@ public class FirebaseAuthService {
                 email,
                 firstName,
                 surname,
-                role.getAuthority()
+                confirmedRole.name()
         );
 
         domainEventManager.manageDomainEvents("IdentityContext", List.of(event));

@@ -51,7 +51,7 @@ public class StaffApplicationService {
 
     @Transactional
     public void ammendStaffMember(AmmendStaffMemberCommand command) {
-        StaffJpa staffJpa = staffRepository.findById(command.staffId().toString())
+        StaffJpa staffJpa = staffRepository.findById(command.staffId())
                 .orElseThrow(() -> new IllegalArgumentException("Staff member not found with ID: " + command.staffId()));
 
         StaffMember staff = StaffMemberJpaToDomainMapper.map(staffJpa);

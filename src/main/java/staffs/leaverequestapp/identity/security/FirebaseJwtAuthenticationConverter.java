@@ -19,7 +19,16 @@ public class FirebaseJwtAuthenticationConverter
         implements Converter<Jwt, AbstractAuthenticationToken> {
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        String roleClaim = Objects.requireNonNull(jwt.getClaimAsString("role"));
+        String roleClaim = jwt.getClaimAsString("role");
+        if (roleClaim == null && Boolean.TRUE.equals(jwt.getClaimAsBoolean("admin"))) {
+            roleClaim = "ADMIN";
+        }
+        roleClaim = Objects.requireNonNull(roleClaim, "JWT role claim is required")
+                .trim()
+                .toUpperCase();
+        if (roleClaim.startsWith("ROLE_")) {
+            roleClaim = roleClaim.substring("ROLE_".length());
+        }
 
         Collection<GrantedAuthority> authorities = List.of(
                 new SimpleGrantedAuthority("ROLE_" + roleClaim));

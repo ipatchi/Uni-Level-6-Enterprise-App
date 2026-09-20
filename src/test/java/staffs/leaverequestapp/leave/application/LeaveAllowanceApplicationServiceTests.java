@@ -68,25 +68,21 @@ class LeaveAllowanceApplicationServiceTests {
     }
 
     @Test
-    void amendAllowanceRequiresAuthenticatedIdentity() {
-        when(leaveAllowanceRepository.findByIdentityId(IDENTITY_ID))
-                .thenReturn(Optional.empty());
+    void amendAllowanceDoesNotRequireTheAdminToHaveOwnAllowance() {
+        when(leaveAllowanceRepository.findByStaffId(STAFF_ID))
+                .thenReturn(Optional.of(allowance(10.0)));
 
-        assertThatThrownBy(() -> service.ammendLeaveAllowance(
-                new AmmendLeaveAllowanceCommand(IDENTITY_ID, STAFF_ID, 30.0)))
-                .isInstanceOf(LeaveAllowanceNotFoundException.class)
-                .hasMessageContaining("No leave allowance found for identity");
+        service.ammendLeaveAllowance(
+                new AmmendLeaveAllowanceCommand("firebase-admin", STAFF_ID, 30.0));
 
-        verify(leaveAllowanceRepository, never()).findByStaffId(any());
-        verify(leaveAllowanceRepository, never()).save(any());
+        verify(leaveAllowanceRepository).findByStaffId(STAFF_ID);
+        verify(leaveAllowanceRepository).save(any(LeaveAllowanceJpa.class));
     }
 
     @Test
     void amendAllowanceUpdatesTheRequestedStaffAllowance() {
         LeaveAllowanceJpa allowance = allowance(10.0);
 
-        when(leaveAllowanceRepository.findByIdentityId(IDENTITY_ID))
-                .thenReturn(Optional.of(allowance));
         when(leaveAllowanceRepository.findByStaffId(STAFF_ID))
                 .thenReturn(Optional.of(allowance));
         when(leaveAllowanceRepository.save(any(LeaveAllowanceJpa.class)))

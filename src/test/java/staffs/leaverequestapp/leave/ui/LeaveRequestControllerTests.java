@@ -9,6 +9,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import staffs.leaverequestapp.leave.application.dto.LeaveRequestDTO;
 import staffs.leaverequestapp.leave.domain.LeaveStatus;
 import staffs.leaverequestapp.leave.LeaveContextFacade;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -128,7 +131,12 @@ class LeaveRequestControllerTests {
     @DisplayName("You can approve a leave request")
     void approveLeaveRequest() throws Exception {
         mockMvc.perform(patch("/leave-requests/{request_id}/approve", VALID_REQUEST_ID)
-                        .principal(() -> MANAGER_IDENTITY_ID))
+                        .with(authentication(new UsernamePasswordAuthenticationToken(
+                                MANAGER_IDENTITY_ID, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_MANAGER")))))
+                        .principal(new UsernamePasswordAuthenticationToken(
+                                MANAGER_IDENTITY_ID, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_MANAGER")))))
                 .andExpect(status().isOk());
 
         verify(facade).approveLeaveRequest(any(ApproveLeaveRequestCommand.class));
@@ -138,9 +146,31 @@ class LeaveRequestControllerTests {
     @DisplayName("You can reject a leave request")
     void rejectLeaveRequest() throws Exception {
         mockMvc.perform(patch("/leave-requests/{request_id}/reject", VALID_REQUEST_ID)
-                        .principal(() -> MANAGER_IDENTITY_ID))
+                        .with(authentication(new UsernamePasswordAuthenticationToken(
+                                MANAGER_IDENTITY_ID, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_MANAGER")))))
+                        .principal(new UsernamePasswordAuthenticationToken(
+                                MANAGER_IDENTITY_ID, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_MANAGER")))))
                 .andExpect(status().isOk());
 
         verify(facade).rejectLeaveRequest(any(RejectLeaveRequestCommand.class));
+    }
+
+    @Test
+    @DisplayName("An admin can approve a leave request")
+    void adminCanApproveLeaveRequest() throws Exception {
+        mockMvc.perform(patch("/leave-requests/{request_id}/approve", VALID_REQUEST_ID)
+                        .with(authentication(new UsernamePasswordAuthenticationToken(
+                                "firebase-admin", null,
+                                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))))
+                        .principal(new UsernamePasswordAuthenticationToken(
+                                "firebase-admin", null,
+                                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))))
+                .andExpect(status().isOk());
+
+        var commandCaptor = org.mockito.ArgumentCaptor.forClass(ApproveLeaveRequestCommand.class);
+        verify(facade).approveLeaveRequest(commandCaptor.capture());
+        org.junit.jupiter.api.Assertions.assertTrue(commandCaptor.getValue().adminOverride());
     }
 }

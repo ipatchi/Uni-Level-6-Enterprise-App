@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface StaffRepository extends CrudRepository<StaffJpa, String> {
+public interface StaffRepository extends CrudRepository<StaffJpa, UUID> {
     Optional<StaffJpa> findByStaffId(UUID staffId);
     Optional<StaffJpa> findByIdentityId(String identityId);
 }
